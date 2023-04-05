@@ -1,8 +1,12 @@
 const ChildCategory = require('../models/ChildCategory');
+const SubCategory = require('../models/SubCategory');
 const base = require('../services/base');
 
 let index = async (req , res , next ) => {
-      let result = await ChildCategory.find();
+      let result = await ChildCategory.find().populate({
+            path : "sub_category",
+            model : SubCategory
+      });
       if (result.length > 0) {
             base.fmsg(res , result , "Fetched all child categories . . ");
       }
@@ -15,10 +19,10 @@ let store = async (req , res , next) => {
       let existCat = await ChildCategory.findOne({name : req.body.name});
 
       if (!existCat) {
-            let result = new ChildCategory();
-            result.name = req.body.name;
-            result.slug = base.createSlug(req.body.name);
+            req.body.slug = base.createSlug(req.body.name);
+            let result = new ChildCategory(req.body);
             await result.save();
+            await SubCategory.findByIdAndUpdate(result.sub_category , {$push : {child_categories : result._id}});
             base.fmsg(res , result , 'Created child category');
       } else {
             next(new Error('Child category already exists'));
@@ -55,6 +59,7 @@ let drop = async (req , res , next) => {
       let existData = await ChildCategory.findOne({slug : req.params.slug});
       if (existData) {
             await ChildCategory.deleteOne({slug : req.params.slug});
+            await SubCategory.findByIdAndUpdate(existData.sub_category , { $pull  : { child_categories : existData._id } })
             base.fmsg(res , {} , "deleted");
       } else {
             next(new Error('No child category found...'));

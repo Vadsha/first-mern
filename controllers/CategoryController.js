@@ -1,8 +1,12 @@
 const Category = require('../models/Category');
+const SubCategory = require('../models/SubCategory');
 const base = require('../services/base');
 
 let index = async (req , res , next ) => {
-      let result = await Category.find();
+      let result = await Category.find().populate({
+            path : "sub_categories",
+            model : SubCategory
+      });
       if (result.length > 0) {
             base.fmsg(res , result , "Fetched all Categories . . ");
       }

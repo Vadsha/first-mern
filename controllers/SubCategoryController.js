@@ -1,8 +1,14 @@
 const SubCategory = require('../models/SubCategory');
+const Category = require('../models/Category');
+const ChildCategory = require('../models/ChildCategory');
 const base = require('../services/base');
 
 let index = async (req , res , next ) => {
-      let result = await SubCategory.find();
+      let result = await SubCategory.find().populate(
+      {
+            path : 'category',
+            model : Category,
+      });
       if (result.length > 0) {
             base.fmsg(res , result , "Fetched all sub-categories . . ");
       }
@@ -15,10 +21,10 @@ let store = async (req , res , next) => {
       let existCat = await SubCategory.findOne({name : req.body.name});
 
       if (!existCat) {
-            let result = new SubCategory();
-            result.name = req.body.name;
-            result.slug = base.createSlug(req.body.name);
+            req.body.slug = base.createSlug(req.body.name);
+            let result = new SubCategory(req.body);
             await result.save();
+            await Category.findByIdAndUpdate(result.category , {$push : {sub_categories : result._id}});
             base.fmsg(res , result , 'Created sub category');
       } else {
             next(new Error('Sub category already exists'));
@@ -54,7 +60,9 @@ let patch = async (req , res , next ) => {
 let drop = async (req , res , next) => {
       let existData = await SubCategory.findOne({slug : req.params.slug});
       if (existData) {
+            // base.fmsg(res , existData , "updated");
             await SubCategory.deleteOne({slug : req.params.slug});
+            await Category.findByIdAndUpdate(existData , {$pull : {sub_categories : existData._id}})
             base.fmsg(res , {} , "deleted");
       } else {
             next(new Error('No sub category found...'));

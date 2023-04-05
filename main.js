@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 
 require('dotenv').config();
 const bodyParser = require('body-parser');            //can send requests with data
@@ -23,6 +24,7 @@ mongoose.connect(`mongodb://127.0.0.1:27017/${process.env.DATABASE_NAME}`)
 
 app.use(bodyParser.json());
 app.use(fileUpload());
+app.use(cors());
 
 //Routing
 app.use('/users' , userRouter);
