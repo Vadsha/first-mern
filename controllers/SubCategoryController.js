@@ -32,7 +32,11 @@ let store = async (req , res , next) => {
 }
 
 let show = async (req , res , next) => {
-      let result = await SubCategory.findOne({slug : req.params.slug});
+      let result = await SubCategory.findOne({slug : req.params.slug}).populate(
+            {
+                  path : 'category',
+                  model : Category,
+            });
       if (result) {
             base.fmsg(res , result , `${result.name} found. . .`);
       } else {
@@ -62,7 +66,7 @@ let drop = async (req , res , next) => {
       if (existData) {
             // base.fmsg(res , existData , "updated");
             await SubCategory.deleteOne({slug : req.params.slug});
-            await Category.findByIdAndUpdate(existData , {$pull : {sub_categories : existData._id}})
+            await Category.findByIdAndUpdate(existData.category , {$pull : {sub_categories : existData._id}})
             base.fmsg(res , {} , "deleted");
       } else {
             next(new Error('No sub category found...'));

@@ -1,4 +1,5 @@
 const bcrypt =  require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
       
@@ -7,6 +8,15 @@ module.exports = {
       },
 
       encode : (payload) => bcrypt.hashSync(payload , 8),
+
+      comparePassword : (password , hash) => bcrypt.compareSync(password , hash),
+
+      generateToken : (user) => {
+            return jwt.sign({
+                  exp: Math.floor(Date.now() / 1000) + (60 * 60),
+                  data: user
+                }, process.env.SECRET_KEY);
+      },
 
       createSlug : (name) => {
             let slug = name.toLowerCase();

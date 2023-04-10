@@ -26,7 +26,11 @@ let store = async (req , res , next) => {
 }
 
 let show = async (req , res , next) => {
-      let result = await Tag.findOne({slug : req.params.slug});
+      let result = await Tag.findOne({slug : req.params.slug}).populate(
+            {
+                  path : 'category',
+                  model : Category,
+            });
       if (result) {
             base.fmsg(res , result , `${result.name} found. . .`);
       } else {

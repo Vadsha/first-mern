@@ -8,11 +8,15 @@ const mongoose = require('mongoose');                 //to connect with mongoDb
 
 
 //routers
-const userRouter = require('./routes/userRouter');    
+const {tokenValidator} = require('./services/validator');
+const userRouter = require('./routes/submissionRouter');    
 const categoryRouter = require('./routes/categoryRouter');
 const subCategoryRouter = require('./routes/subCategoryRouter');
 const childCategoryRouter = require('./routes/childCategoryRouter');
 const tagRouter = require('./routes/tagRouter');
+const permissionRouter = require('./routes/permissionRouter');
+const roleRouter = require('./routes/roleRouter');
+const fileRouter = require('./routes/fileRouter');
 
 
 // database connection
@@ -28,11 +32,13 @@ app.use(cors());
 
 //Routing
 app.use('/users' , userRouter);
-app.use('/categories' , categoryRouter);
-app.use('/sub-categories' , subCategoryRouter);
-app.use('/child-categories' , childCategoryRouter);
-app.use('/tags' , tagRouter);
-
+app.use('/categories' , tokenValidator() ,categoryRouter);
+app.use('/sub-categories' , tokenValidator() ,subCategoryRouter);
+app.use('/child-categories' , tokenValidator() ,childCategoryRouter);
+app.use('/tags' , tokenValidator() ,tagRouter);
+app.use('/permissions' , tokenValidator() ,permissionRouter);
+app.use('/roles' , tokenValidator() ,roleRouter);
+app.use('/files' , tokenValidator() ,fileRouter);
 
 //catch all errors
 app.use((err , req , res , next) => {
